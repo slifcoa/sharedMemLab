@@ -12,9 +12,6 @@
 #define SIZE 4096
 #define MAX 50
 
-void sigHandler(int);
-//int running = 1;
-
 struct sharedMemory{
     int running;
     int flag;
@@ -22,8 +19,6 @@ struct sharedMemory{
     char input[MAX];
 
 };
-
-//bool readLine = false;
 
 int main(){
 
@@ -53,8 +48,7 @@ int main(){
         exit(1);
     }
     //Handle Graceful Shutdowns Accordingly
-   // signal(SIGINT, sigHandler);
-   printf("Reader Program starting...\n"); 
+    printf("Reader Program starting...\n"); 
     
     //While loop, will terminate when writer gracefully shut's down
     while(shmPtr[0].running == 1){
