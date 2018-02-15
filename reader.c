@@ -19,6 +19,8 @@ struct sharedMemory{
     char input[MAX];
 
 };
+struct shmid_ds buf;
+int numReaders;
 
 int main(){
 
@@ -36,7 +38,7 @@ int main(){
 
     //Get's a specified region for shared memory and grants necessary permissions 
     //for the specific program
-    if ( (shmId = shmget(key,sizeof(struct sharedMemory) * MAX, 0666)) < 0) {
+    if ( (shmId = shmget(key,sizeof(struct sharedMemory) * MAX, S_IRUSR)) < 0) {
         perror("Error creating shared memory.\n");
         exit(1);
     }
@@ -52,10 +54,13 @@ int main(){
     
     //While loop, will terminate when writer gracefully shut's down
     while(shmPtr[0].running == 1){
-    
+   
+
+    //numReaders = shmctl(shmId, IPC_STAT, &buf); 
     //Reader busy wait's since either he has read the line or writer's writing
-    while(shmPtr[0].flag == 2 || readLine){
-	if(shmPtr[0].flag == 0){
+    while(shmPtr[0].flag == 0 || readLine){
+	numReaders = shmctl(shmId, IPC_STAT, &buf);
+	if(shmPtr[0].flag == ((int) buf.shm_nattch - 1)){
 	    readLine = false;
 	}
     }
@@ -63,7 +68,7 @@ int main(){
     //readLine = false;
     printf("%s", shmPtr[0].input);
     readLine = true;
-    shmPtr[0].flag++;
+    shmPtr[0].flag--;
     }
     //Detaches the shared memory region upon shutting down
     if (shmdt (shmPtr) < 0) {
